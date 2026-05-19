@@ -50,12 +50,12 @@
       width: min(1680px, calc(100% - 32px));
       min-height: 100vh;
       margin: 0 auto;
-      padding: 22px 0;
+      padding: 14px 0;
       position: relative;
       z-index: 1;
       display: grid;
       grid-template-rows: auto minmax(0, 1fr);
-      gap: 16px;
+      gap: 8px;
     }
 
     .nav {
@@ -108,9 +108,9 @@
 
     .studio {
       display: grid;
-      grid-template-columns: 430px minmax(0, 1fr);
-      gap: 18px;
-      min-height: calc(100vh - 102px);
+      grid-template-columns: 410px minmax(0, 1fr);
+      gap: 12px;
+      min-height: calc(100vh - 76px);
     }
 
     .sidebar, .result-panel {
@@ -122,17 +122,17 @@
     }
 
     .sidebar {
-      padding: 18px;
+      padding: 14px;
       display: grid;
       grid-template-rows: auto minmax(0, 1fr);
-      gap: 14px;
+      gap: 8px;
       overflow: hidden;
     }
 
     .hero-copy {
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 26px;
-      padding: 22px;
+      padding: 16px;
       background:
         radial-gradient(circle at 20% 20%, rgba(65,214,255,0.18), transparent 32%),
         radial-gradient(circle at 92% 8%, rgba(143,124,255,0.22), transparent 30%),
@@ -149,12 +149,12 @@
       border-radius: 999px;
       padding: 8px 12px;
       font-size: 12px;
-      margin-bottom: 18px;
+      margin-bottom: 12px;
     }
 
     h1 {
       margin: 0;
-      font-size: 38px;
+      font-size: 32px;
       line-height: 0.98;
       letter-spacing: -0.065em;
     }
@@ -167,10 +167,10 @@
     }
 
     .lead {
-      margin: 16px 0 0;
+      margin: 12px 0 0;
       color: var(--muted);
-      font-size: 14px;
-      line-height: 1.7;
+      font-size: 13px;
+      line-height: 1.6;
     }
 
     form {
@@ -183,16 +183,16 @@
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 22px;
       background: rgba(5, 7, 18, 0.42);
-      padding: 16px;
+      padding: 10px;
     }
 
-    .panel + .panel { margin-top: 12px; }
+    .panel + .panel { margin-top: 8px; }
 
     label {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 8px;
       margin-bottom: 9px;
       color: #eceeff;
       font-weight: 690;
@@ -210,7 +210,7 @@
       width: 100%;
       border: 1px solid rgba(255,255,255,0.14);
       border-radius: 16px;
-      padding: 13px 14px;
+      padding: 11px 12px;
       color: var(--text);
       background: rgba(255,255,255,0.07);
       outline: none;
@@ -238,7 +238,7 @@
 
     .dropzone {
       position: relative;
-      min-height: 160px;
+      min-height: 120px;
       border: 1.5px dashed rgba(255,255,255,0.26);
       border-radius: 20px;
       display: grid;
@@ -289,7 +289,7 @@
     .preview {
       width: 100%;
       height: 100%;
-      min-height: 160px;
+      min-height: 120px;
       display: none;
       object-fit: contain;
       background: #050712;
@@ -298,7 +298,7 @@
     .actions {
       display: grid;
       grid-template-columns: 1fr auto;
-      gap: 10px;
+      gap: 8px;
       align-items: center;
       margin-top: 12px;
     }
@@ -306,7 +306,7 @@
     button, .download {
       border: 0;
       border-radius: 16px;
-      padding: 13px 16px;
+      padding: 10px 12px;
       color: #060815;
       background: linear-gradient(135deg, #ffffff, #93e9ff 48%, #a99cff);
       font: inherit;
@@ -327,8 +327,8 @@
     }
 
     .status {
-      min-height: 20px;
-      margin-top: 12px;
+      min-height: 16px;
+      margin-top: 8px;
       color: var(--muted);
       font-size: 13px;
       line-height: 1.5;
@@ -342,7 +342,7 @@
       padding: 18px;
       display: grid;
       grid-template-rows: auto minmax(0, 1fr) auto;
-      gap: 14px;
+      gap: 8px;
     }
 
     .result-head {
@@ -355,14 +355,14 @@
 
     .result-title h2 {
       margin: 0;
-      font-size: clamp(26px, 3vw, 42px);
+      font-size: clamp(22px, 2.2vw, 34px);
       letter-spacing: -0.055em;
     }
 
     .result-title p {
-      margin: 8px 0 0;
+      margin: 6px 0 0;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
     }
 
     .result-frame {
@@ -388,7 +388,7 @@
 
     .empty-result {
       max-width: 540px;
-      padding: 44px;
+      padding: 24px;
       text-align: center;
       color: var(--muted);
     }
@@ -396,7 +396,7 @@
     .empty-result strong {
       display: block;
       color: #fff;
-      font-size: 28px;
+      font-size: 20px;
       letter-spacing: -0.04em;
       margin-bottom: 10px;
     }
