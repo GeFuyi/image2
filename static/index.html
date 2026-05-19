@@ -50,12 +50,12 @@
       width: min(1680px, calc(100% - 32px));
       min-height: 100vh;
       margin: 0 auto;
-      padding: 14px 0;
+      padding: 10px 0;
       position: relative;
       z-index: 1;
       display: grid;
       grid-template-rows: auto minmax(0, 1fr);
-      gap: 8px;
+      gap: 6px;
     }
 
     .nav {
@@ -88,7 +88,7 @@
     .pill {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       border: 1px solid var(--border);
       border-radius: 999px;
       padding: 9px 13px;
@@ -108,9 +108,9 @@
 
     .studio {
       display: grid;
-      grid-template-columns: 410px minmax(0, 1fr);
-      gap: 12px;
-      min-height: calc(100vh - 76px);
+      grid-template-columns: 390px minmax(0, 1fr);
+      gap: 10px;
+      min-height: calc(100vh - 60px);
     }
 
     .sidebar, .result-panel {
@@ -122,17 +122,17 @@
     }
 
     .sidebar {
-      padding: 14px;
+      padding: 8px;
       display: grid;
       grid-template-rows: auto minmax(0, 1fr);
-      gap: 8px;
+      gap: 6px;
       overflow: hidden;
     }
 
     .hero-copy {
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 26px;
-      padding: 16px;
+      padding: 12px;
       background:
         radial-gradient(circle at 20% 20%, rgba(65,214,255,0.18), transparent 32%),
         radial-gradient(circle at 92% 8%, rgba(143,124,255,0.22), transparent 30%),
@@ -154,7 +154,7 @@
 
     h1 {
       margin: 0;
-      font-size: 32px;
+      font-size: 28px;
       line-height: 0.98;
       letter-spacing: -0.065em;
     }
@@ -167,10 +167,10 @@
     }
 
     .lead {
-      margin: 12px 0 0;
+      margin: 8px 0 0;
       color: var(--muted);
-      font-size: 13px;
-      line-height: 1.6;
+      font-size: 12px;
+      line-height: 1.45;
     }
 
     form {
@@ -183,7 +183,7 @@
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 22px;
       background: rgba(5, 7, 18, 0.42);
-      padding: 10px;
+      padding: 8px;
     }
 
     .panel + .panel { margin-top: 8px; }
@@ -192,7 +192,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 6px;
       margin-bottom: 9px;
       color: #eceeff;
       font-weight: 690;
@@ -238,7 +238,7 @@
 
     .dropzone {
       position: relative;
-      min-height: 120px;
+      min-height: 108px;
       border: 1.5px dashed rgba(255,255,255,0.26);
       border-radius: 20px;
       display: grid;
@@ -289,7 +289,7 @@
     .preview {
       width: 100%;
       height: 100%;
-      min-height: 120px;
+      min-height: 108px;
       display: none;
       object-fit: contain;
       background: #050712;
@@ -298,7 +298,7 @@
     .actions {
       display: grid;
       grid-template-columns: 1fr auto;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
       margin-top: 12px;
     }
@@ -342,7 +342,7 @@
       padding: 18px;
       display: grid;
       grid-template-rows: auto minmax(0, 1fr) auto;
-      gap: 8px;
+      gap: 6px;
     }
 
     .result-head {
@@ -355,14 +355,14 @@
 
     .result-title h2 {
       margin: 0;
-      font-size: clamp(22px, 2.2vw, 34px);
+      font-size: clamp(20px, 2vw, 28px);
       letter-spacing: -0.055em;
     }
 
     .result-title p {
-      margin: 6px 0 0;
+      margin: 4px 0 0;
       color: var(--muted);
-      font-size: 13px;
+      font-size: 12px;
     }
 
     .result-frame {
@@ -388,7 +388,7 @@
 
     .empty-result {
       max-width: 540px;
-      padding: 24px;
+      padding: 18px;
       text-align: center;
       color: var(--muted);
     }
@@ -396,7 +396,7 @@
     .empty-result strong {
       display: block;
       color: #fff;
-      font-size: 20px;
+      font-size: 18px;
       letter-spacing: -0.04em;
       margin-bottom: 10px;
     }
@@ -406,7 +406,7 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      min-height: 42px;
+      min-height: 34px;
     }
 
     .download {
