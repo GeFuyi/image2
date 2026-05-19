@@ -55,10 +55,19 @@ def _make_data_url(b64_value: str, mime_type: str = "image/png") -> str:
     return f"data:{mime_type};base64,{b64_value}"
 
 
-def _resolve_url(url: str) -> str:
+def _resolve_url(url: str, base_url: str = OPENAI_BASE_URL) -> str:
     if url.startswith(("http://", "https://", "data:")):
         return url
-    return f"{OPENAI_BASE_URL.rstrip('/')}/{url.lstrip('/')}"
+    return f"{base_url.rstrip('/')}/{url.lstrip('/')}"
+
+
+def _normalize_base_url(base_url: str) -> str:
+    base_url = base_url.strip().rstrip("/")
+    if not base_url:
+        return OPENAI_BASE_URL
+    if not base_url.startswith(("http://", "https://")):
+        raise HTTPException(status_code=400, detail="base_url 必须以 http:// 或 https:// 开头")
+    return base_url
 
 
 def _mime_from_bytes(data: bytes) -> str:
@@ -87,8 +96,8 @@ def _image_data_url_from_base64(value: str) -> str | None:
     return _make_data_url(compact, _mime_from_bytes(decoded[:16]))
 
 
-async def _data_url_from_url(request: Request, url: str) -> str:
-    resolved_url = _resolve_url(url)
+async def _data_url_from_url(request: Request, url: str, base_url: str) -> str:
+    resolved_url = _resolve_url(url, base_url)
     if resolved_url.startswith("data:"):
         return resolved_url
     response = await request.app.state.http_client.get(resolved_url)
@@ -132,7 +141,7 @@ async def health() -> dict[str, Any]:
     }
 
 
-async def _find_image_data_url(request: Request, item: Any) -> str | None:
+async def _find_image_data_url(request: Request, item: Any, base_url: str) -> str | None:
     item = _to_plain(item)
 
     if isinstance(item, str):
@@ -151,25 +160,25 @@ async def _find_image_data_url(request: Request, item: Any) -> str | None:
         for key in ("url", "image_url"):
             value = item.get(key)
             if isinstance(value, str):
-                return await _data_url_from_url(request, value)
+                return await _data_url_from_url(request, value, base_url)
 
         for value in item.values():
-            data_url = await _find_image_data_url(request, value)
+            data_url = await _find_image_data_url(request, value, base_url)
             if data_url:
                 return data_url
         return None
 
     if isinstance(item, (list, tuple)):
         for value in item:
-            data_url = await _find_image_data_url(request, value)
+            data_url = await _find_image_data_url(request, value, base_url)
             if data_url:
                 return data_url
 
     return None
 
 
-async def _extract_image_payload(request: Request, result: Any) -> dict[str, Any]:
-    image_data_url = await _find_image_data_url(request, result)
+async def _extract_image_payload(request: Request, result: Any, base_url: str) -> dict[str, Any]:
+    image_data_url = await _find_image_data_url(request, result, base_url)
     if not image_data_url:
         raise RuntimeError("上游返回中没有可用的图片字段")
 
@@ -222,10 +231,12 @@ async def generate(
     request: Request,
     prompt: str = Form(...),
     api_key: str = Form(""),
+    base_url: str = Form(""),
     image: Optional[UploadFile] = File(None),
 ) -> dict[str, Any]:
     prompt = prompt.strip()
     api_key = api_key.strip() or DEFAULT_OPENAI_API_KEY
+    upstream_base_url = _normalize_base_url(base_url)
     if not prompt:
         raise HTTPException(status_code=400, detail="prompt 不能为空")
     if not api_key:
@@ -252,7 +263,7 @@ async def generate(
     async with request.app.state.generation_gate:
         try:
             client = AsyncOpenAI(
-                base_url=OPENAI_BASE_URL,
+                base_url=upstream_base_url,
                 api_key=api_key,
                 http_client=request.app.state.http_client,
             )
@@ -266,7 +277,7 @@ async def generate(
             else:
                 raise HTTPException(status_code=500, detail="UPSTREAM_API 只能是 responses 或 images_edit")
 
-            payload = await _extract_image_payload(request, result)
+            payload = await _extract_image_payload(request, result, upstream_base_url)
             payload["model"] = OPENAI_MODEL
             payload["api_mode"] = UPSTREAM_API
             return payload

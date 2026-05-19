@@ -1,6 +1,6 @@
 # Image2 Studio
 
-一个极薄的 FastAPI + HTML 图片生成代理，前端填写自己的 API key，可上传图片和提示词，也可以只写提示词；后端用 OpenAI 兼容接口转发到服务器上的 Sub2API。
+一个极薄的 FastAPI + HTML 图片生成代理，前端填写自己的 API key，可上传图片和提示词，也可以只写提示词；后端用 OpenAI 兼容接口转发到服务器上的 Sub2API。页面会在浏览器本地保存 API key 和可选 Base URL。
 
 ## 本地/服务器启动
 
