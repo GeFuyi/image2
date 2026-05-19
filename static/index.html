@@ -110,7 +110,9 @@
       display: grid;
       grid-template-columns: 430px minmax(0, 1fr);
       gap: 18px;
-      min-height: calc(100vh - 102px);
+      aspect-ratio: 16 / 10;
+      max-height: calc(100vh - 102px);
+      min-height: 0;
     }
 
     .sidebar, .result-panel {
@@ -367,7 +369,6 @@
 
     .result-frame {
       min-height: 0;
-      aspect-ratio: 16 / 10;
       border: 1px solid rgba(255,255,255,0.12);
       border-radius: 26px;
       display: grid;
@@ -437,7 +438,7 @@
 
     @media (max-width: 860px) {
       .app { min-height: auto; }
-      .studio { grid-template-columns: 1fr; min-height: auto; }
+      .studio { grid-template-columns: 1fr; aspect-ratio: auto; max-height: none; min-height: auto; }
       .sidebar { overflow: visible; }
       form { overflow: visible; }
       .result-panel { min-height: 560px; }
