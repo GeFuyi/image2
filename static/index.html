@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Image2 Studio</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #070812;
+      --panel: rgba(255, 255, 255, 0.08);
+      --panel-strong: rgba(255, 255, 255, 0.13);
+      --border: rgba(255, 255, 255, 0.16);
+      --text: #f7f7fb;
+      --muted: #a9adbf;
+      --primary: #8f7cff;
+      --primary-2: #41d6ff;
+      --danger: #ff6b8b;
+      --success: #8dffa8;
+      --shadow: 0 28px 90px rgba(0, 0, 0, 0.42);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(143, 124, 255, 0.28), transparent 34rem),
+        radial-gradient(circle at 82% 12%, rgba(65, 214, 255, 0.2), transparent 30rem),
+        radial-gradient(circle at 54% 100%, rgba(255, 107, 139, 0.13), transparent 24rem),
+        var(--bg);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 44px 44px;
+      mask-image: linear-gradient(to bottom, black, transparent 82%);
+    }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 34px 0 48px;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 42px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 760;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 16px 40px rgba(65, 214, 255, 0.2);
+      display: grid;
+      place-items: center;
+      color: #070812;
+      font-size: 21px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 9px 13px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.06);
+      backdrop-filter: blur(18px);
+      font-size: 13px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--success);
+      box-shadow: 0 0 16px var(--success);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 0.92fr) minmax(360px, 1.08fr);
+      gap: 24px;
+      align-items: stretch;
+    }
+
+    .intro, .workspace {
+      border: 1px solid var(--border);
+      border-radius: 34px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.055));
+      backdrop-filter: blur(26px);
+      box-shadow: var(--shadow);
+    }
+
+    .intro {
+      padding: 42px;
+      position: relative;
+      overflow: hidden;
+      min-height: 640px;
+    }
+
+    .intro::after {
+      content: "";
+      position: absolute;
+      right: -110px;
+      bottom: -160px;
+      width: 340px;
+      height: 340px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(143, 124, 255, 0.3), transparent 68%);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: #dfe2ff;
+      background: rgba(143, 124, 255, 0.13);
+      border: 1px solid rgba(143, 124, 255, 0.34);
+      border-radius: 999px;
+      padding: 9px 13px;
+      font-size: 13px;
+      margin-bottom: 26px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(44px, 7vw, 76px);
+      line-height: 0.94;
+      letter-spacing: -0.075em;
+    }
+
+    .gradient-text {
+      display: block;
+      background: linear-gradient(100deg, #ffffff, #b8b0ff 45%, #68e1ff);
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .lead {
+      max-width: 560px;
+      margin: 24px 0 0;
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.75;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 34px;
+    }
+
+    .stat {
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 17px;
+      background: rgba(255,255,255,0.055);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 22px;
+      letter-spacing: -0.04em;
+    }
+
+    .stat span {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .showcase {
+      position: absolute;
+      left: 42px;
+      right: 42px;
+      bottom: 42px;
+      display: grid;
+      grid-template-columns: 1fr 0.72fr;
+      gap: 14px;
+      z-index: 1;
+    }
+
+    .tile {
+      min-height: 130px;
+      border-radius: 28px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05)),
+        radial-gradient(circle at 22% 22%, rgba(65,214,255,0.36), transparent 34%),
+        radial-gradient(circle at 84% 24%, rgba(143,124,255,0.42), transparent 28%),
+        radial-gradient(circle at 52% 84%, rgba(255,107,139,0.28), transparent 30%);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .tile.small {
+      min-height: 130px;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.05)),
+        radial-gradient(circle at 60% 20%, rgba(141,255,168,0.26), transparent 36%),
+        radial-gradient(circle at 18% 80%, rgba(143,124,255,0.42), transparent 34%);
+    }
+
+    .tile::after {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border-radius: 22px;
+      border: 1px solid rgba(255,255,255,0.17);
+    }
+
+    .workspace {
+      padding: 22px;
+    }
+
+    .panel {
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 26px;
+      background: rgba(5, 7, 18, 0.42);
+      padding: 22px;
+    }
+
+    .panel + .panel { margin-top: 16px; }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      color: #eceeff;
+      font-weight: 690;
+      letter-spacing: -0.02em;
+    }
+
+    .dropzone {
+      position: relative;
+      min-height: 238px;
+      border: 1.5px dashed rgba(255,255,255,0.26);
+      border-radius: 24px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(143,124,255,0.16), transparent 38%),
+        rgba(255,255,255,0.045);
+      transition: 180ms ease;
+      cursor: pointer;
+    }
+
+    .dropzone.dragover, .dropzone:hover {
+      border-color: rgba(65,214,255,0.7);
+      transform: translateY(-1px);
+      background:
+        radial-gradient(circle at 50% 0%, rgba(65,214,255,0.18), transparent 38%),
+        rgba(255,255,255,0.07);
+    }
+
+    .dropzone input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .upload-empty {
+      text-align: center;
+      padding: 26px;
+      color: var(--muted);
+    }
+
+    .upload-empty .icon {
+      width: 68px;
+      height: 68px;
+      border-radius: 24px;
+      margin: 0 auto 16px;
+      display: grid;
+      place-items: center;
+      background: rgba(255,255,255,0.09);
+      border: 1px solid rgba(255,255,255,0.14);
+      color: #ffffff;
+      font-size: 28px;
+    }
+
+    .preview {
+      width: 100%;
+      height: 100%;
+      min-height: 238px;
+      display: none;
+      object-fit: contain;
+      background: #050712;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 134px;
+      resize: vertical;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 20px;
+      padding: 16px 17px;
+      color: var(--text);
+      background: rgba(255,255,255,0.07);
+      outline: none;
+      font: inherit;
+      line-height: 1.55;
+      transition: 160ms ease;
+    }
+
+    textarea:focus {
+      border-color: rgba(65,214,255,0.68);
+      box-shadow: 0 0 0 4px rgba(65,214,255,0.08);
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-top: 16px;
+    }
+
+    button, .download {
+      border: 0;
+      border-radius: 18px;
+      padding: 14px 18px;
+      color: #060815;
+      background: linear-gradient(135deg, #ffffff, #93e9ff 48%, #a99cff);
+      font: inherit;
+      font-weight: 760;
+      cursor: pointer;
+      transition: transform 150ms ease, filter 150ms ease, opacity 150ms ease;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    button:hover, .download:hover { transform: translateY(-1px); filter: brightness(1.05); }
+    button:disabled { cursor: not-allowed; opacity: 0.58; transform: none; }
+
+    .ghost {
+      color: var(--text);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.14);
+    }
+
+    .status {
+      min-height: 20px;
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .status.error { color: var(--danger); }
+    .status.ok { color: var(--success); }
+
+    .result-frame {
+      min-height: 360px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.07), rgba(255,255,255,0.025)),
+        #050712;
+    }
+
+    .result-frame img {
+      display: none;
+      width: 100%;
+      height: 100%;
+      max-height: 620px;
+      object-fit: contain;
+    }
+
+    .empty-result {
+      padding: 42px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      border: 2px solid rgba(255,255,255,0.24);
+      border-top-color: #fff;
+      display: inline-block;
+      animation: spin 840ms linear infinite;
+      vertical-align: -4px;
+      margin-right: 8px;
+    }
+
+    .download {
+      display: none;
+      margin-top: 14px;
+      color: #061018;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 920px) {
+      .hero { grid-template-columns: 1fr; }
+      .intro { min-height: auto; padding-bottom: 42px; }
+      .showcase { position: static; margin-top: 32px; }
+    }
+
+    @media (max-width: 620px) {
+      .shell { width: min(100% - 20px, 1180px); padding-top: 18px; }
+      .nav { align-items: flex-start; flex-direction: column; margin-bottom: 22px; }
+      .intro, .workspace { border-radius: 26px; }
+      .intro, .workspace, .panel { padding: 18px; }
+      .stats { grid-template-columns: 1fr; }
+      .showcase { grid-template-columns: 1fr; }
+      .actions { flex-direction: column; align-items: stretch; }
+      button, .download { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <nav class="nav">
+      <div class="brand">
+        <div class="brand-mark">I2</div>
+        <div>
+          <div>Image2 Studio</div>
+          <div style="color: var(--muted); font-size: 12px; font-weight: 520; letter-spacing: 0;">Sub2API · gpt-image-2</div>
+        </div>
+      </div>
+      <div class="pill"><span class="dot"></span><span id="healthText">服务检测中</span></div>
+    </nav>
+
+    <section class="hero">
+      <aside class="intro">
+        <div class="eyebrow">本地 8080 代理 · 图片不落盘 · 10 并发</div>
+        <h1>
+          上传参考图，
+          <span class="gradient-text">生成新视觉。</span>
+        </h1>
+        <p class="lead">这个页面只负责把图片和提示词安全转发到服务器上的 Sub2API。Key 留在后端，浏览器只看到结果图。</p>
+        <div class="stats">
+          <div class="stat"><strong>10</strong><span>并发请求上限</span></div>
+          <div class="stat"><strong>0</strong><span>用户图片持久保存</span></div>
+          <div class="stat"><strong>8080</strong><span>上游 Sub2API 端口</span></div>
+        </div>
+        <div class="showcase" aria-hidden="true">
+          <div class="tile"></div>
+          <div class="tile small"></div>
+        </div>
+      </aside>
+
+      <section class="workspace">
+        <form id="generateForm">
+          <div class="panel">
+            <label for="imageInput">参考图片</label>
+            <div class="dropzone" id="dropzone">
+              <input id="imageInput" name="image" type="file" accept="image/png,image/jpeg,image/webp" required />
+              <img class="preview" id="preview" alt="上传预览" />
+              <div class="upload-empty" id="uploadEmpty">
+                <div class="icon">+</div>
+                <strong>拖拽图片到这里，或点击选择</strong>
+                <div style="margin-top: 8px;">支持 PNG、JPG、WEBP，建议小于 50MB</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <label for="promptInput">生成提示词</label>
+            <textarea id="promptInput" name="prompt" required placeholder="例如：把这张图改成高级感赛博朋克海报，霓虹灯光，电影级构图，超清细节。"></textarea>
+            <div class="actions">
+              <button id="generateButton" type="submit">开始生成</button>
+              <button class="ghost" id="clearButton" type="button">清空</button>
+            </div>
+            <div class="status" id="statusText"></div>
+          </div>
+        </form>
+
+        <div class="panel">
+          <label>生成结果</label>
+          <div class="result-frame">
+            <img id="resultImage" alt="生成结果" />
+            <div class="empty-result" id="emptyResult">结果会显示在这里。</div>
+          </div>
+          <a class="download" id="downloadLink" download="image2-result.png">下载结果图</a>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('generateForm');
+    const imageInput = document.getElementById('imageInput');
+    const promptInput = document.getElementById('promptInput');
+    const dropzone = document.getElementById('dropzone');
+    const preview = document.getElementById('preview');
+    const uploadEmpty = document.getElementById('uploadEmpty');
+    const resultImage = document.getElementById('resultImage');
+    const emptyResult = document.getElementById('emptyResult');
+    const statusText = document.getElementById('statusText');
+    const healthText = document.getElementById('healthText');
+    const generateButton = document.getElementById('generateButton');
+    const clearButton = document.getElementById('clearButton');
+    const downloadLink = document.getElementById('downloadLink');
+
+    function setStatus(message, type = '') {
+      statusText.className = `status ${type}`.trim();
+      statusText.innerHTML = message;
+    }
+
+    function resetResult() {
+      resultImage.removeAttribute('src');
+      resultImage.style.display = 'none';
+      emptyResult.style.display = 'block';
+      downloadLink.style.display = 'none';
+      downloadLink.removeAttribute('href');
+    }
+
+    function showPreview(file) {
+      if (!file) return;
+      const url = URL.createObjectURL(file);
+      preview.src = url;
+      preview.onload = () => URL.revokeObjectURL(url);
+      preview.style.display = 'block';
+      uploadEmpty.style.display = 'none';
+      resetResult();
+    }
+
+    imageInput.addEventListener('change', () => showPreview(imageInput.files[0]));
+
+    ['dragenter', 'dragover'].forEach((eventName) => {
+      dropzone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+    });
+
+    ['dragleave', 'drop'].forEach((eventName) => {
+      dropzone.addEventListener(eventName, (event) => {
+        event.preventDefault();
+        dropzone.classList.remove('dragover');
+      });
+    });
+
+    dropzone.addEventListener('drop', (event) => {
+      const file = event.dataTransfer.files[0];
+      if (!file) return;
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      imageInput.files = transfer.files;
+      showPreview(file);
+    });
+
+    clearButton.addEventListener('click', () => {
+      form.reset();
+      preview.removeAttribute('src');
+      preview.style.display = 'none';
+      uploadEmpty.style.display = 'block';
+      setStatus('');
+      resetResult();
+    });
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const file = imageInput.files[0];
+      const prompt = promptInput.value.trim();
+
+      if (!file) {
+        setStatus('请先上传一张图片。', 'error');
+        return;
+      }
+
+      if (!prompt) {
+        setStatus('请输入生成提示词。', 'error');
+        return;
+      }
+
+      const payload = new FormData();
+      payload.append('image', file);
+      payload.append('prompt', prompt);
+
+      generateButton.disabled = true;
+      generateButton.textContent = '生成中';
+      resetResult();
+      setStatus('<span class="spinner"></span>正在调用服务器上的 gpt-image-2，请稍等。');
+
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          body: payload,
+        });
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.detail || '生成失败，请稍后重试。');
+        }
+
+        if (!data.image_data_url) {
+          throw new Error('后端没有返回可展示的图片。');
+        }
+
+        resultImage.src = data.image_data_url;
+        resultImage.style.display = 'block';
+        emptyResult.style.display = 'none';
+        downloadLink.href = data.image_data_url;
+        downloadLink.style.display = 'inline-block';
+        setStatus(`生成完成，模型：${data.model || 'gpt-image-2'}。`, 'ok');
+      } catch (error) {
+        setStatus(error.message || '生成失败，请检查服务配置。', 'error');
+      } finally {
+        generateButton.disabled = false;
+        generateButton.textContent = '开始生成';
+      }
+    });
+
+    async function checkHealth() {
+      try {
+        const response = await fetch('/api/health');
+        if (!response.ok) throw new Error('bad health');
+        const data = await response.json();
+        healthText.textContent = `${data.model} · ${data.max_concurrent} 并发`;
+      } catch (error) {
+        healthText.textContent = '后端未就绪';
+      }
+    }
+
+    checkHealth();
+  </script>
+</body>
+</html>
