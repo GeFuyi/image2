@@ -1,12 +1,12 @@
 # Image2 Studio
 
-一个极薄的 FastAPI + HTML 图片生成代理，前端上传图片和提示词，后端用 OpenAI 兼容接口转发到服务器上的 Sub2API。
+一个极薄的 FastAPI + HTML 图片生成代理，前端填写自己的 API key，可上传图片和提示词，也可以只写提示词；后端用 OpenAI 兼容接口转发到服务器上的 Sub2API。
 
 ## 本地/服务器启动
 
 ```bash
 cp .env.example .env
-# 编辑 .env，填入你的 OPENAI_API_KEY
+# 正常情况下不用在 .env 写 OPENAI_API_KEY，用户会在前端页面填写自己的 key。
 # 如果 FastAPI 容器访问的是宿主机 8080，保留：
 # OPENAI_BASE_URL=http://host.docker.internal:8080/v1
 
@@ -23,7 +23,8 @@ http://服务器IP:8000
 
 ```env
 OPENAI_BASE_URL=http://host.docker.internal:8080/v1
-OPENAI_API_KEY=replace-with-your-sub2api-key
+# 可选：如果留空，用户必须在前端页面填写自己的 key。
+OPENAI_API_KEY=
 MODEL=gpt-image-2
 UPSTREAM_API=responses
 MAX_CONCURRENT=10

@@ -315,6 +315,30 @@
       background: #050712;
     }
 
+    input[type="password"] {
+      width: 100%;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 18px;
+      padding: 15px 16px;
+      color: var(--text);
+      background: rgba(255,255,255,0.07);
+      outline: none;
+      font: inherit;
+      transition: 160ms ease;
+    }
+
+    input[type="password"]:focus {
+      border-color: rgba(65,214,255,0.68);
+      box-shadow: 0 0 0 4px rgba(65,214,255,0.08);
+    }
+
+    .hint {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
     textarea {
       width: 100%;
       min-height: 134px;
@@ -456,10 +480,10 @@
       <aside class="intro">
         <div class="eyebrow">本地 8080 代理 · 图片不落盘 · 10 并发</div>
         <h1>
-          上传参考图，
+          上传图片或只写提示词，
           <span class="gradient-text">生成新视觉。</span>
         </h1>
-        <p class="lead">这个页面只负责把图片和提示词安全转发到服务器上的 Sub2API。Key 留在后端，浏览器只看到结果图。</p>
+        <p class="lead">这个页面把图片、提示词和你填写的 API key 转发到服务器本地的 Sub2API。Key 只用于当前请求，不写进静态页面，也不由这个服务保存。</p>
         <div class="stats">
           <div class="stat"><strong>10</strong><span>并发请求上限</span></div>
           <div class="stat"><strong>0</strong><span>用户图片持久保存</span></div>
@@ -474,14 +498,20 @@
       <section class="workspace">
         <form id="generateForm">
           <div class="panel">
-            <label for="imageInput">参考图片</label>
+            <label for="apiKeyInput">API Key</label>
+            <input id="apiKeyInput" name="api_key" type="password" autocomplete="off" spellcheck="false" placeholder="填你自己的 sk-..." required />
+            <div class="hint">Key 只会随本次请求发到这个 Python 后端，再由后端转发到本机 8080 的 Sub2API。</div>
+          </div>
+
+          <div class="panel">
+            <label for="imageInput">参考图片 <span style="color: var(--muted); font-weight: 560;">可选</span></label>
             <div class="dropzone" id="dropzone">
-              <input id="imageInput" name="image" type="file" accept="image/png,image/jpeg,image/webp" required />
+              <input id="imageInput" name="image" type="file" accept="image/png,image/jpeg,image/webp" />
               <img class="preview" id="preview" alt="上传预览" />
               <div class="upload-empty" id="uploadEmpty">
                 <div class="icon">+</div>
-                <strong>拖拽图片到这里，或点击选择</strong>
-                <div style="margin-top: 8px;">支持 PNG、JPG、WEBP，建议小于 50MB</div>
+                <strong>可拖拽参考图，也可以不上传直接生成</strong>
+                <div style="margin-top: 8px;">支持 PNG、JPG、WEBP，图片可选，建议小于 50MB</div>
               </div>
             </div>
           </div>
@@ -511,6 +541,7 @@
 
   <script>
     const form = document.getElementById('generateForm');
+    const apiKeyInput = document.getElementById('apiKeyInput');
     const imageInput = document.getElementById('imageInput');
     const promptInput = document.getElementById('promptInput');
     const dropzone = document.getElementById('dropzone');
@@ -585,9 +616,10 @@
       event.preventDefault();
       const file = imageInput.files[0];
       const prompt = promptInput.value.trim();
+      const apiKey = apiKeyInput.value.trim();
 
-      if (!file) {
-        setStatus('请先上传一张图片。', 'error');
+      if (!apiKey) {
+        setStatus('请先填写你的 API key。', 'error');
         return;
       }
 
@@ -597,13 +629,16 @@
       }
 
       const payload = new FormData();
-      payload.append('image', file);
+      payload.append('api_key', apiKey);
+      if (file) {
+        payload.append('image', file);
+      }
       payload.append('prompt', prompt);
 
       generateButton.disabled = true;
       generateButton.textContent = '生成中';
       resetResult();
-      setStatus('<span class="spinner"></span>正在调用服务器上的 gpt-image-2，请稍等。');
+      setStatus(`<span class="spinner"></span>正在调用服务器上的 gpt-image-2 ${file ? '参考图生成' : '纯文本生成'}，请稍等。`);
 
       try {
         const response = await fetch('/api/generate', {

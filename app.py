@@ -8,7 +8,7 @@ import logging
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import httpx
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
@@ -18,7 +18,7 @@ from openai import AsyncOpenAI
 BASE_DIR = Path(__file__).resolve().parent
 INDEX_FILE = BASE_DIR / "static" / "index.html"
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL", "http://host.docker.internal:8080/v1").rstrip("/")
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
+DEFAULT_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 OPENAI_MODEL = os.getenv("MODEL", "gpt-image-2").strip() or "gpt-image-2"
 UPSTREAM_API = os.getenv("UPSTREAM_API", "responses").strip().lower() or "responses"
 MAX_CONCURRENT = max(1, int(os.getenv("MAX_CONCURRENT", "10")))
@@ -99,9 +99,6 @@ async def _data_url_from_url(request: Request, url: str) -> str:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if not OPENAI_API_KEY:
-        raise RuntimeError("OPENAI_API_KEY is required")
-
     timeout = httpx.Timeout(180.0, connect=10.0)
     limits = httpx.Limits(
         max_connections=MAX_CONCURRENT + 2,
@@ -109,11 +106,6 @@ async def lifespan(app: FastAPI):
     )
     client = httpx.AsyncClient(timeout=timeout, limits=limits)
     app.state.http_client = client
-    app.state.openai = AsyncOpenAI(
-        base_url=OPENAI_BASE_URL,
-        api_key=OPENAI_API_KEY,
-        http_client=client,
-    )
     app.state.generation_gate = asyncio.Semaphore(MAX_CONCURRENT)
     try:
         yield
@@ -192,25 +184,33 @@ async def _extract_image_payload(request: Request, result: Any) -> dict[str, Any
     }
 
 
-async def _call_responses_api(request: Request, prompt: str, image_bytes: bytes, content_type: str) -> Any:
-    image_data_url = _make_data_url(base64.b64encode(image_bytes).decode("utf-8"), content_type)
-    return await request.app.state.openai.responses.create(
+async def _call_responses_api(client: AsyncOpenAI, prompt: str, image_bytes: bytes | None, content_type: str | None) -> Any:
+    content = [{"type": "input_text", "text": prompt}]
+    if image_bytes and content_type:
+        image_data_url = _make_data_url(base64.b64encode(image_bytes).decode("utf-8"), content_type)
+        content.append({"type": "input_image", "image_url": image_data_url})
+
+    return await client.responses.create(
         model=OPENAI_MODEL,
         input=[
             {
                 "role": "user",
-                "content": [
-                    {"type": "input_text", "text": prompt},
-                    {"type": "input_image", "image_url": image_data_url},
-                ],
+                "content": content,
             }
         ],
     )
 
 
-async def _call_images_edit_api(request: Request, prompt: str, image_bytes: bytes, content_type: str, filename: str) -> Any:
+async def _call_images_generate_api(client: AsyncOpenAI, prompt: str) -> Any:
+    return await client.images.generate(
+        model=OPENAI_MODEL,
+        prompt=prompt,
+    )
+
+
+async def _call_images_edit_api(client: AsyncOpenAI, prompt: str, image_bytes: bytes, content_type: str, filename: str) -> Any:
     image_file = (filename, io.BytesIO(image_bytes), content_type)
-    return await request.app.state.openai.images.edit(
+    return await client.images.edit(
         model=OPENAI_MODEL,
         image=image_file,
         prompt=prompt,
@@ -221,31 +221,48 @@ async def _call_images_edit_api(request: Request, prompt: str, image_bytes: byte
 async def generate(
     request: Request,
     prompt: str = Form(...),
-    image: UploadFile = File(...),
+    api_key: str = Form(""),
+    image: Optional[UploadFile] = File(None),
 ) -> dict[str, Any]:
     prompt = prompt.strip()
+    api_key = api_key.strip() or DEFAULT_OPENAI_API_KEY
     if not prompt:
         raise HTTPException(status_code=400, detail="prompt 不能为空")
+    if not api_key:
+        raise HTTPException(status_code=400, detail="请填写 API key")
 
-    content_type = _normalize_content_type(image.content_type)
-    if content_type not in ALLOWED_CONTENT_TYPES:
-        raise HTTPException(status_code=400, detail="只支持 PNG、JPG、WEBP 图片")
+    content_type: str | None = None
+    image_bytes: bytes | None = None
+    filename = "upload.png"
 
-    image_bytes = await image.read()
-    if not image_bytes:
-        raise HTTPException(status_code=400, detail="图片不能为空")
+    if image and image.filename:
+        content_type = _normalize_content_type(image.content_type)
+        if content_type not in ALLOWED_CONTENT_TYPES:
+            raise HTTPException(status_code=400, detail="只支持 PNG、JPG、WEBP 图片")
 
-    if len(image_bytes) > MAX_UPLOAD_BYTES:
-        raise HTTPException(status_code=413, detail="图片过大，请压缩后重试")
-
-    filename = image.filename or "upload.png"
+        image_bytes = await image.read()
+        if not image_bytes:
+            image_bytes = None
+            content_type = None
+        elif len(image_bytes) > MAX_UPLOAD_BYTES:
+            raise HTTPException(status_code=413, detail="图片过大，请压缩后重试")
+        else:
+            filename = image.filename or "upload.png"
 
     async with request.app.state.generation_gate:
         try:
+            client = AsyncOpenAI(
+                base_url=OPENAI_BASE_URL,
+                api_key=api_key,
+                http_client=request.app.state.http_client,
+            )
             if UPSTREAM_API in {"responses", "response"}:
-                result = await _call_responses_api(request, prompt, image_bytes, content_type)
-            elif UPSTREAM_API in {"images_edit", "image_edit", "edits"}:
-                result = await _call_images_edit_api(request, prompt, image_bytes, content_type, filename)
+                result = await _call_responses_api(client, prompt, image_bytes, content_type)
+            elif UPSTREAM_API in {"images_edit", "image_edit", "edits", "images"}:
+                if image_bytes and content_type:
+                    result = await _call_images_edit_api(client, prompt, image_bytes, content_type, filename)
+                else:
+                    result = await _call_images_generate_api(client, prompt)
             else:
                 raise HTTPException(status_code=500, detail="UPSTREAM_API 只能是 responses 或 images_edit")
 
