@@ -110,9 +110,7 @@
       display: grid;
       grid-template-columns: 430px minmax(0, 1fr);
       gap: 18px;
-      aspect-ratio: 16 / 10;
-      max-height: calc(100vh - 102px);
-      min-height: 0;
+      min-height: calc(100vh - 102px);
     }
 
     .sidebar, .result-panel {
@@ -438,7 +436,7 @@
 
     @media (max-width: 860px) {
       .app { min-height: auto; }
-      .studio { grid-template-columns: 1fr; aspect-ratio: auto; max-height: none; min-height: auto; }
+      .studio { grid-template-columns: 1fr; min-height: auto; }
       .sidebar { overflow: visible; }
       form { overflow: visible; }
       .result-panel { min-height: 560px; }
